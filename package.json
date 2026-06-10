@@ -1,0 +1,15 @@
+{
+  "name": "e2s-leads",
+  "version": "1.0.0",
+  "description": "Formulário e painel de leads de energia solar (E2S x Eco Fazenda Abe)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
