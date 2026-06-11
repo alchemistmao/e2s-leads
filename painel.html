@@ -141,6 +141,14 @@
   .pf .fbox .fv{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:#7a5b00;margin-top:4px}
   .pf .photo img{max-width:100%;border-radius:10px;margin-top:8px;border:1px solid var(--line);display:none}
   .pf .gmaps{display:inline-block;margin-top:8px;font-size:13px;color:var(--teal-deep);font-weight:700;text-decoration:none}
+  .m-props{margin-top:16px}
+  .m-props .pl{font-size:12.5px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px}
+  .prow{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--field);border:1px solid var(--line);border-radius:11px;padding:9px 12px;margin-bottom:7px}
+  .prow .pinfo{min-width:0}
+  .prow .pinfo b{font-size:14px;display:block}
+  .prow .pinfo span{font-size:12px;color:var(--ink-soft)}
+  .preabrir{flex:0 0 auto;background:#fff;border:1px solid var(--teal);color:var(--teal-deep);font-weight:700;font-size:13px;border-radius:9px;padding:8px 12px;cursor:pointer}
+  .preabrir:hover{background:#f3fbfc}
   .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:15px}
 </style>
 </head>
@@ -281,6 +289,15 @@ function openDetail(id){
   const l = leads.find(x => x.id === id); if(!l) return;
   const opts = ORDER.map(s => '<option value="'+s+'"'+(s===l.status?' selected':'')+'>'+STATUS[s].label+'</option>').join('');
   const contaBtn = l.conta_url ? '<a class="a-conta" href="'+esc(l.conta_url)+'" target="_blank" rel="noopener">📎 Ver conta de luz</a>' : '<a class="a-conta off">Sem conta anexada</a>';
+  const propsArr = Array.isArray(l.propostas) ? l.propostas : [];
+  const propHtml = propsArr.length
+    ? '<div class="m-props"><div class="pl">Propostas geradas ('+propsArr.length+')</div>'+
+        propsArr.slice().reverse().map(function(p){
+          return '<div class="prow"><div class="pinfo"><b>'+esc(p.numero||'—')+'</b><span>'+fmtDate(p.criadoEm)+' · '+esc(String(p.consumo||'?'))+' kWh · fator '+esc(String(p.fator||'?'))+'×</span></div>'+
+                 '<button class="preabrir" data-q="'+esc(encodeURIComponent(p.query||''))+'">Reabrir</button></div>';
+        }).join('')+
+      '</div>'
+    : '';
   $('modalCard').innerHTML =
     '<div class="m-top"><div><h2 class="serif">'+esc(l.nome)+'</h2></div><button class="m-close" id="mClose">&times;</button></div>'+
     '<div class="m-when">Recebido em '+fmtDate(l.data)+'</div>'+
@@ -295,6 +312,7 @@ function openDetail(id){
       '<a class="a-wa" href="'+waLink(l.whatsapp)+'" target="_blank" rel="noopener">Chamar no WhatsApp</a>'+
       (l.email?'<a class="a-mail" href="mailto:'+esc(l.email)+'">Enviar e-mail</a>':'')+ contaBtn +
     '</div>'+
+    propHtml +
     '<div class="m-edit"><label>Status</label><select id="mStatus">'+opts+'</select>'+
       '<label style="margin-top:14px">Notas internas</label><textarea id="mNotas" placeholder="Anotações sobre o contato, próximos passos...">'+esc(l.notas||'')+'</textarea>'+
       '<button class="m-prop" id="mProp">📄 Gerar proposta comercial</button>'+
@@ -305,6 +323,9 @@ function openDetail(id){
   $('mSave').addEventListener('click', () => saveDetail(id));
   $('mDel').addEventListener('click', () => deleteDetail(id));
   $('mProp').addEventListener('click', () => openPropostaModal(id));
+  Array.prototype.forEach.call($('modalCard').querySelectorAll('.preabrir'), function(b){
+    b.addEventListener('click', function(){ window.open('/proposta.html?'+decodeURIComponent(b.getAttribute('data-q')), '_blank'); });
+  });
 }
 function closeModal(){ $('modal').classList.remove('show'); }
 $('modal').addEventListener('click', (e) => { if(e.target.id === 'modal') closeModal(); });
@@ -381,8 +402,10 @@ function generateProposta(id){
   var l=leads.find(function(x){return x.id===id;}); if(!l) return;
   var consumo=parseFloat(($('p_consumo').value||'').replace(',','.'));
   if(!consumo || consumo<=0){ alert('Informe o consumo médio (kWh/mês), lido na conta de luz.'); $('p_consumo').focus(); return; }
+  if(!Array.isArray(l.propostas)) l.propostas=[];
+  var numero=propNumero(id)+(l.propostas.length ? '-'+(l.propostas.length+1) : '');
   var params=new URLSearchParams({
-    cliente:l.nome||'', cidade:l.cidade||'', propostaNumero:propNumero(id),
+    cliente:l.nome||'', cidade:l.cidade||'', propostaNumero:numero,
     dataISO:new Date().toISOString().slice(0,10),
     vendedorNome:'Mauro Orlando', vendedorFone:'12997671661',
     mensagemVendedor:$('p_msg').value||'',
@@ -393,7 +416,13 @@ function generateProposta(id){
     precoFatorConta:($('p_fator').value||'35').replace(',','.'),
     ligacao:$('p_lig').value||'bifasico'
   });
-  window.open('/proposta.html?'+params.toString(), '_blank');
+  var rec={numero:numero, criadoEm:new Date().toISOString(), consumo:consumo, fator:($('p_fator').value||'35'), query:params.toString()};
+  l.propostas.push(rec);
+  api({action:'update', password:pw, id:id, propostas:l.propostas}).then(function(resp){
+    if(!(resp&&resp.ok)){ alert('Proposta aberta, mas não consegui salvar no histórico: '+((resp&&resp.error)||'erro')); }
+  }).catch(function(){ alert('Proposta aberta, mas falha ao salvar no histórico (conexão).'); });
+  window.open('/proposta.html?'+rec.query, '_blank');
+  closePModal();
 }
 document.getElementById('pModal').addEventListener('click', function(e){ if(e.target.id==='pModal') closePModal(); });
 
