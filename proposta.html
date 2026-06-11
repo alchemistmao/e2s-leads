@@ -187,13 +187,16 @@
 
   /* ---------- PRINT / PDF ---------- */
   @media print{
-    @page{size:A4;margin:12mm}
-    body{background:#fff;padding:0}
+    @page{size:A4;margin:11mm}
+    html,body{background:#fff;padding:0}
     .toolbar{display:none !important}
-    .doc{max-width:none;gap:12px}
-    .sheet{box-shadow:none;border:1px solid #e2d8c4;border-radius:14px;break-inside:avoid}
-    .cover,.invest{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-    .metric,.spec,.roi-cell,.eco-cell,.barbox,.note{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .doc{max-width:none;gap:10px}
+    .pad{padding:20px 24px}
+    .cover .pad{padding:24px 26px}
+    .sheet{box-shadow:none;border:1px solid #e2d8c4;border-radius:14px}
+    .sec-h{break-after:avoid}
+    .cover,.invest,.chartcard,.roofwrap,.note,.letter,.compare,.metric,.spec,.roi-cell,.eco-cell,.step,.barbox{break-inside:avoid}
+    *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   }
 </style>
 </head>
@@ -268,7 +271,7 @@
         <div class="bv" style="color:var(--forest)">R$ <span id="contaSolar">0</span></div>
         <div class="bartrack"><div class="barfill bar-solar" id="barSolar" style="height:0"></div></div>
       </div>
-      <div class="savetag">💡 São <b>R$ <span id="contaEcon">0</span></b> a menos por mês — dinheiro que volta para o seu bolso, todo mês, por mais de 25 anos.</div>
+      <div class="savetag"><svg viewBox="0 0 24 24" width="15" height="15" style="vertical-align:-2px;margin-right:5px" fill="none" stroke="#C99700" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.6.5 1 1.3 1 2.1V18h6v-1.2c0-.8.4-1.6 1-2.1A7 7 0 0 0 12 2z"/></svg>São <b>R$ <span id="contaEcon">0</span></b> a menos por mês — dinheiro que volta para o seu bolso, todo mês, por mais de 25 anos.</div>
     </div>
   </div></section>
 
@@ -314,7 +317,7 @@
     <div class="sec-h"><div class="sec-n">4</div><h2>Transparência total: a Lei 14.300</h2></div>
     <p class="sec-desc">Diferente de muitas propostas, nós já incluímos no cálculo a cobrança do "Fio B" prevista em lei — então o número que você vê é o número real.</p>
     <div class="note">
-      <div class="ico">⚖️</div>
+      <div class="ico"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 7h10M8 21h8"/><path d="M5 7l-2.5 6a3 3 0 0 0 5 0L5 7zM19 7l-2.5 6a3 3 0 0 0 5 0L19 7z"/></svg></div>
       <div>
         <h3>O que é e por que já consideramos</h3>
         <p>A Lei 14.300 cobra uma parcela (o <b>Fio B</b>) sobre a energia que você injeta na rede e usa depois — <b>60% em 2026</b>, subindo nos anos seguintes. A energia que você consome na hora em que é gerada continua <b>100% livre</b> dessa cobrança. Toda a economia mostrada nesta proposta <b>já desconta esse custo</b>, ano a ano, até <span id="leiAno">—</span>. Mesmo assim, o seu retorno permanece excelente. Quem instala agora ainda aproveita as melhores condições da transição.</p>
@@ -327,9 +330,9 @@
     <div class="sec-h"><div class="sec-n">5</div><h2>Seu impacto no planeta</h2></div>
     <p class="sec-desc">Ao longo de 25 anos, sua usina solar deixa de emitir (estimativa):</p>
     <div class="eco-grid">
-      <div class="eco-cell"><div class="ei">🌫️</div><div class="ev"><span id="co2">0</span> t</div><div class="el">de CO₂ evitadas</div></div>
-      <div class="eco-cell"><div class="ei">🌳</div><div class="ev"><span id="arvores">0</span></div><div class="el">árvores plantadas (equiv.)</div></div>
-      <div class="eco-cell"><div class="ei">⚡</div><div class="ev"><span id="mwh">0</span> MWh</div><div class="el">de energia limpa gerada</div></div>
+      <div class="eco-cell"><div class="ei"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#788454" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 1 0 6 15"/><path d="M6 15h11.5"/></svg></div><div class="ev"><span id="co2">0</span> t</div><div class="el">de CO₂ evitadas</div></div>
+      <div class="eco-cell"><div class="ei"><svg viewBox="0 0 24 24" width="30" height="30" fill="#3C4A2B"><path d="M12 2l-5 7h3l-4 6h5v5h2v-5h5l-4-6h3z"/></svg></div><div class="ev"><span id="arvores">0</span></div><div class="el">árvores plantadas (equiv.)</div></div>
+      <div class="eco-cell"><div class="ei"><svg viewBox="0 0 24 24" width="30" height="30" fill="#FCC400"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></div><div class="ev"><span id="mwh">0</span> MWh</div><div class="el">de energia limpa gerada</div></div>
     </div>
   </div></section>
 
@@ -342,7 +345,7 @@
       <div class="step"><div class="num">2</div><div class="st">Projeto &amp; ART</div><div class="sd">Engenharia e documentação</div></div>
       <div class="step"><div class="num">3</div><div class="st">Homologação</div><div class="sd">Aprovação na concessionária</div></div>
       <div class="step"><div class="num">4</div><div class="st">Instalação</div><div class="sd">Montagem dos equipamentos</div></div>
-      <div class="step"><div class="num">5</div><div class="st">Conexão ⚡</div><div class="sd">Sistema gerando energia</div></div>
+      <div class="step"><div class="num">5</div><div class="st">Conexão <svg viewBox="0 0 24 24" width="13" height="13" style="vertical-align:-1px" fill="#FCC400"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></div><div class="sd">Sistema gerando energia</div></div>
     </div>
   </div></section>
 
@@ -587,26 +590,37 @@ function drawRoi(R){
 
 /* ---------- Ilustração do telhado ---------- */
 function drawRoof(n){
-  n = Math.min(n, 40);
-  const cols = Math.min(n, 10), rows = Math.ceil(n/cols);
-  const pad=20, gw=600-pad*2, gh=160;
-  const cw = gw/cols, ch = Math.min(gh/Math.max(rows,1), 34);
-  const pw = cw*0.82, ph = ch*0.78;
-  let g = `<rect x="6" y="6" width="588" height="208" rx="14" fill="#cfe0e6"/>
-           <polygon points="40,196 300,40 560,196" fill="#7d6b58"/>
-           <polygon points="40,196 300,40 300,196" fill="#8a7763"/>`;
+  n = Math.max(1, Math.min(n, 24));
+  const cols = Math.max(1, Math.round(Math.sqrt(n*1.9)));
+  const rows = Math.ceil(n/cols);
+  const TL=[184,58], TR=[470,90], BL=[130,150], BR=[416,182];
+  const lerp=(a,b,t)=>[a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t];
+  const P=(i,j)=>lerp(lerp(TL,TR,i/cols), lerp(BL,BR,i/cols), j/rows);
+  const cx=(TL[0]+TR[0]+BL[0]+BR[0])/4, cy=(TL[1]+TR[1]+BL[1]+BR[1])/4;
+  const exp=(p,k)=>[cx+(p[0]-cx)*k, cy+(p[1]-cy)*k];
+  let g = '<defs>'+
+    '<linearGradient id="rfSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef5f7"/><stop offset="1" stop-color="#dbe8ed"/></linearGradient>'+
+    '<linearGradient id="rfRoof" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d3c6a8"/><stop offset="1" stop-color="#b6a584"/></linearGradient>'+
+    '<linearGradient id="rfPanel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#236087"/><stop offset="1" stop-color="#10384f"/></linearGradient>'+
+    '</defs>';
+  g += '<rect x="4" y="4" width="592" height="212" rx="16" fill="url(#rfSky)"/>';
+  const rTL=exp(TL,1.18), rTR=exp(TR,1.18), rBR=exp(BR,1.18), rBL=exp(BL,1.18);
+  g += '<polygon points="'+rTL+' '+rTR+' '+rBR+' '+rBL+'" fill="rgba(40,30,15,.10)" transform="translate(0,9)"/>';
+  g += '<polygon points="'+rTL+' '+rTR+' '+rBR+' '+rBL+'" fill="url(#rfRoof)" stroke="#a8987a" stroke-width="1.5"/>';
   let count=0;
-  // grade de módulos em perspectiva simples sobre a água esquerda do telhado
-  const ox=150, oy=80, dx=26, dy=15, tw=22, th=13;
-  for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+  for(let r=0;r<rows;r++){ for(let c=0;c<cols;c++){
     if(count>=n) break;
-    const px = ox + c*dx + r*10;
-    const py = oy + r*dy + c*5;
-    g += `<polygon points="${px},${py} ${px+tw},${py+4} ${px+tw-3},${py+th+4} ${px-3},${py+th}" fill="#0e3a52" stroke="#2b86ad" stroke-width="1"/>`;
+    const a=P(c,r), b=P(c+1,r), d=P(c+1,r+1), e=P(c,r+1);
+    const mx=(a[0]+b[0]+d[0]+e[0])/4, my=(a[1]+b[1]+d[1]+e[1])/4;
+    const sh=t=>[mx+(t[0]-mx)*0.88, my+(t[1]-my)*0.88];
+    const A=sh(a),B=sh(b),D=sh(d),E=sh(e);
+    g += '<polygon points="'+A+' '+B+' '+D+' '+E+'" fill="url(#rfPanel)" stroke="#0c2c40" stroke-width="1"/>';
+    const m1=[(A[0]+E[0])/2,(A[1]+E[1])/2], m2=[(B[0]+D[0])/2,(B[1]+D[1])/2];
+    g += '<line x1="'+m1[0]+'" y1="'+m1[1]+'" x2="'+m2[0]+'" y2="'+m2[1]+'" stroke="#3a85ad" stroke-width="0.8" opacity="0.65"/>';
     count++;
-  }
-  g += `<circle cx="520" cy="46" r="20" fill="#FCC400"/>`;
-  for(let i=0;i<8;i++){ const a=i*Math.PI/4; g+=`<line x1="${520+Math.cos(a)*26}" y1="${46+Math.sin(a)*26}" x2="${520+Math.cos(a)*34}" y2="${46+Math.sin(a)*34}" stroke="#FCC400" stroke-width="3" stroke-linecap="round"/>`; }
+  }}
+  g += '<circle cx="530" cy="44" r="16" fill="#FCC400"/>';
+  for(let i=0;i<8;i++){ const ang=i*Math.PI/4; g += '<line x1="'+(530+Math.cos(ang)*22)+'" y1="'+(44+Math.sin(ang)*22)+'" x2="'+(530+Math.cos(ang)*30)+'" y2="'+(44+Math.sin(ang)*30)+'" stroke="#FCC400" stroke-width="3" stroke-linecap="round"/>'; }
   document.getElementById('roofSvg').innerHTML = g;
 }
 
@@ -615,7 +629,7 @@ function render(){
   const R = calcular(P);
 
   // capa
-  setTxt('cliente', P.cliente);
+  setTxt('cliente', (P.cliente||'').replace(/\S+/g, function(w){ return w.charAt(0).toUpperCase()+w.slice(1).toLowerCase(); }));
   setTxt('msgVendedor', P.mensagemVendedor);
   setTxt('msgVendNome', P.vendedorNome);
   setTxt('vendInicial', (P.vendedorNome||'E').trim().charAt(0).toUpperCase());
