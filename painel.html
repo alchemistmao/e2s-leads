@@ -126,6 +126,21 @@
     background:#fff;border:1.5px solid #e7c9c4;transition:background .15s,border-color .15s}
   .m-del:hover{background:#fbeeec;border-color:var(--err)}
   .m-del:disabled{opacity:.6;cursor:default}
+  .m-prop{width:100%;margin-top:15px;font-weight:700;font-size:16px;color:#fff;border-radius:12px;padding:14px;
+    background:linear-gradient(135deg,var(--teal),var(--teal-deep));box-shadow:0 12px 24px -12px rgba(0,124,144,.7);transition:transform .12s}
+  .m-prop:hover{transform:translateY(-2px)}
+  .pf label{display:block;font-size:12px;font-weight:700;color:var(--ink-soft);margin:12px 0 5px;text-transform:uppercase;letter-spacing:.03em}
+  .pf .row{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+  .pf input,.pf select,.pf textarea{width:100%;font-family:inherit;font-size:15px;background:var(--field);
+    border:1.5px solid var(--line);border-radius:11px;padding:11px 12px;color:var(--ink)}
+  .pf input:focus,.pf select:focus,.pf textarea:focus{outline:none;border-color:var(--teal);background:#fff;box-shadow:0 0 0 4px rgba(0,168,192,.15)}
+  .pf textarea{min-height:74px;resize:vertical}
+  .pf .hint{font-size:12px;color:var(--ink-soft);font-weight:500;text-transform:none;letter-spacing:0}
+  .pf .fbox{background:#FBF1D2;border:1px dashed #d9b94e;border-radius:12px;padding:12px 14px;margin-top:14px}
+  .pf .fbox .fl{font-size:12.5px;color:#7a5b00;font-weight:700}
+  .pf .fbox .fv{font-family:'Fraunces',serif;font-weight:700;font-size:20px;color:#7a5b00;margin-top:4px}
+  .pf .photo img{max-width:100%;border-radius:10px;margin-top:8px;border:1px solid var(--line);display:none}
+  .pf .gmaps{display:inline-block;margin-top:8px;font-size:13px;color:var(--teal-deep);font-weight:700;text-decoration:none}
   .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:15px}
 </style>
 </head>
@@ -174,6 +189,11 @@
   <!-- MODAL -->
   <div class="modal" id="modal">
     <div class="modal-card" id="modalCard"></div>
+  </div>
+
+  <!-- MODAL PROPOSTA -->
+  <div class="modal" id="pModal">
+    <div class="modal-card" id="pModalCard"></div>
   </div>
 
 <script>
@@ -277,12 +297,14 @@ function openDetail(id){
     '</div>'+
     '<div class="m-edit"><label>Status</label><select id="mStatus">'+opts+'</select>'+
       '<label style="margin-top:14px">Notas internas</label><textarea id="mNotas" placeholder="Anotações sobre o contato, próximos passos...">'+esc(l.notas||'')+'</textarea>'+
+      '<button class="m-prop" id="mProp">📄 Gerar proposta comercial</button>'+
       '<button class="m-save" id="mSave">Salvar alterações</button>'+
       '<button class="m-del" id="mDel">Excluir lead</button></div>';
   $('modal').classList.add('show');
   $('mClose').addEventListener('click', closeModal);
   $('mSave').addEventListener('click', () => saveDetail(id));
   $('mDel').addEventListener('click', () => deleteDetail(id));
+  $('mProp').addEventListener('click', () => openPropostaModal(id));
 }
 function closeModal(){ $('modal').classList.remove('show'); }
 $('modal').addEventListener('click', (e) => { if(e.target.id === 'modal') closeModal(); });
@@ -305,6 +327,75 @@ function deleteDetail(id){
     else { btn.textContent='Excluir lead'; btn.disabled=false; alert((resp&&resp.error)||'Erro ao excluir.'); }
   }).catch(function(){ btn.textContent='Excluir lead'; btn.disabled=false; alert('Falha de conexão.'); });
 }
+
+/* ---------- Geração de proposta comercial ---------- */
+var COMPLEX = {
+  telhado:{label:'Tipo de telhado', opts:[['Laje / Solo',0],['Metálico',1],['Fibrocimento',2],['Cerâmico / Colonial',3]]},
+  orient: {label:'Orientação', opts:[['Norte (ideal)',0],['Leste / Oeste',1],['Sul',2]]},
+  sombra: {label:'Sombreamento', opts:[['Nenhum',0],['Parcial',2],['Alto',4]]},
+  acesso: {label:'Acesso / distância', opts:[['Fácil',0],['Difícil / rural',2]]},
+  altura: {label:'Altura do imóvel', opts:[['Térreo',0],['Sobrado / alto',2]]}
+};
+function calcFator(){
+  var sum=0; for(var k in COMPLEX){ var el=$('cx_'+k); if(el) sum+=parseInt(el.value||'0',10); }
+  return Math.max(30, Math.min(40, 30+sum));
+}
+function propNumero(id){
+  var y=new Date().getFullYear();
+  var seq=String(id).replace(/[^a-zA-Z0-9]/g,'').slice(0,4).toUpperCase();
+  return y+'-'+seq;
+}
+function openPropostaModal(id){
+  var l=leads.find(function(x){return x.id===id;}); if(!l) return;
+  closeModal();
+  var primeiro = l.nome ? l.nome.split(' ')[0] : '';
+  var msg='Olá, '+primeiro+'! Preparei esta proposta especialmente para o seu imóvel'+(l.cidade?(' em '+l.cidade):'')+'. Analisei a sua conta de luz e dimensionei um sistema sob medida para reduzir ao máximo o que você paga hoje — com transparência total nos números. Qualquer dúvida, é só me chamar! 🌞';
+  var cx=''; for(var k in COMPLEX){ cx+='<div><label>'+COMPLEX[k].label+'</label><select id="cx_'+k+'" class="cx">'+COMPLEX[k].opts.map(function(o){return '<option value="'+o[1]+'">'+o[0]+'</option>';}).join('')+'</select></div>'; }
+  var gmaps='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent((l.cidade||'')+' Brasil');
+  $('pModalCard').innerHTML=
+    '<div class="m-top"><div><h2 class="serif">Gerar proposta</h2><div class="m-when">'+esc(l.nome)+(l.cidade?(' · '+esc(l.cidade)):'')+'</div></div><button class="m-close" id="pClose">&times;</button></div>'+
+    '<div class="pf">'+
+      '<div class="row">'+
+        '<div style="grid-column:1/-1"><label>Consumo médio (kWh/mês) — lido na conta *</label><input id="p_consumo" type="number" min="1" inputmode="numeric" placeholder="ex.: 520"></div>'+
+        '<div><label>Tarifa (R$/kWh)</label><input id="p_tarifa" type="number" step="0.01" value="0.98"></div>'+
+        '<div><label>HSP sol pleno (h/dia)</label><input id="p_hsp" type="number" step="0.1" value="5.1"></div>'+
+        '<div><label>Módulo (Wp)</label><input id="p_wp" type="number" value="590"></div>'+
+        '<div><label>Ligação</label><select id="p_lig"><option value="monofasico">Monofásica</option><option value="bifasico" selected>Bifásica</option><option value="trifasico">Trifásica</option></select></div>'+
+      '</div>'+
+      '<label style="margin-top:16px">Complexidade <span class="hint">(define o fator 30–40×)</span></label>'+
+      '<div class="row">'+cx+'</div>'+
+      '<div class="fbox"><div class="fl">Fator sugerido pela complexidade: <span id="p_fatorSug">35</span>×</div><div class="fv">Usar fator: <input id="p_fator" type="number" min="30" max="40" step="0.5" value="35" style="width:84px;display:inline-block;padding:5px 8px;font-size:18px;vertical-align:middle">×</div></div>'+
+      '<label style="margin-top:14px">Foto satélite / telhado <span class="hint">(só referência p/ avaliar — não é enviada)</span></label>'+
+      '<div class="photo"><input id="p_foto" type="file" accept="image/*"><br><a class="gmaps" href="'+gmaps+'" target="_blank" rel="noopener">🛰️ Abrir no Google Maps</a><img id="p_fotoPrev" alt=""></div>'+
+      '<label style="margin-top:14px">Mensagem para o cliente</label><textarea id="p_msg">'+esc(msg)+'</textarea>'+
+      '<button class="m-prop" id="p_gerar" style="margin-top:16px">📄 Gerar proposta</button>'+
+    '</div>';
+  $('pModal').classList.add('show');
+  $('pClose').addEventListener('click', closePModal);
+  Array.prototype.forEach.call(document.querySelectorAll('.cx'), function(sel){ sel.addEventListener('change', function(){ var f=calcFator(); $('p_fatorSug').textContent=f; $('p_fator').value=f; }); });
+  $('p_foto').addEventListener('change', function(e){ var f=e.target.files[0]; if(f){ var im=$('p_fotoPrev'); im.src=URL.createObjectURL(f); im.style.display='block'; } });
+  $('p_gerar').addEventListener('click', function(){ generateProposta(id); });
+}
+function closePModal(){ $('pModal').classList.remove('show'); }
+function generateProposta(id){
+  var l=leads.find(function(x){return x.id===id;}); if(!l) return;
+  var consumo=parseFloat(($('p_consumo').value||'').replace(',','.'));
+  if(!consumo || consumo<=0){ alert('Informe o consumo médio (kWh/mês), lido na conta de luz.'); $('p_consumo').focus(); return; }
+  var params=new URLSearchParams({
+    cliente:l.nome||'', cidade:l.cidade||'', propostaNumero:propNumero(id),
+    dataISO:new Date().toISOString().slice(0,10),
+    vendedorNome:'Mauro Orlando', vendedorFone:'12997671661',
+    mensagemVendedor:$('p_msg').value||'',
+    consumoMensalKwh:consumo,
+    tarifaRsKwh:($('p_tarifa').value||'0.98').replace(',','.'),
+    hsp:($('p_hsp').value||'5.1').replace(',','.'),
+    painelWp:$('p_wp').value||'590',
+    precoFatorConta:($('p_fator').value||'35').replace(',','.'),
+    ligacao:$('p_lig').value||'bifasico'
+  });
+  window.open('/proposta.html?'+params.toString(), '_blank');
+}
+document.getElementById('pModal').addEventListener('click', function(e){ if(e.target.id==='pModal') closePModal(); });
 
 </script>
 </body>
