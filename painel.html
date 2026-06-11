@@ -221,6 +221,7 @@ const STATUS = {
 const ORDER = ['novo','em_contato','proposta','fechado','perdido'];
 let pw = sessionStorage.getItem('e2s_pw') || '';
 let leads = [], filter = 'todos', search = '';
+let role = 'super';
 const $ = (id) => document.getElementById(id);
 
 $('loginBtn').addEventListener('click', tryLogin);
@@ -237,7 +238,7 @@ function tryLogin(){
 }
 function fetchLeads(cb){
   api({ action:'list', password: pw }).then(function(resp){
-    if(resp && resp.ok){ leads = resp.leads || []; render(); cb && cb(true); }
+    if(resp && resp.ok){ leads = resp.leads || []; role = resp.role || 'super'; render(); cb && cb(true); }
     else { cb && cb(false, (resp && resp.error) || 'Erro ao carregar.'); }
   }).catch(function(){ cb && cb(false, 'Falha de conexão.'); });
 }
@@ -248,7 +249,16 @@ $('logoutBtn').addEventListener('click', function(){ sessionStorage.removeItem('
 $('refreshBtn').addEventListener('click', function(){ $('refreshBtn').textContent='↻ ...'; fetchLeads(function(){ $('refreshBtn').textContent='↻ Atualizar'; }); });
 $('search').addEventListener('input', function(e){ search = e.target.value.toLowerCase().trim(); renderList(); });
 
-function render(){ renderStats(); renderFilters(); renderList(); }
+function render(){ renderStats(); renderFilters(); renderList(); applyRoleUI(); }
+function applyRoleUI(){
+  var acts = document.querySelector('.topbar .acts');
+  var existing = document.getElementById('roleBadge');
+  if(role==='viewer' && acts && !existing){
+    var sp=document.createElement('span'); sp.id='roleBadge'; sp.textContent='somente leitura';
+    sp.style.cssText='align-self:center;font-size:11px;font-weight:700;color:var(--ink-soft);background:#eee3cf;border-radius:999px;padding:5px 11px';
+    acts.insertBefore(sp, acts.firstChild);
+  } else if(role!=='viewer' && existing){ existing.remove(); }
+}
 function renderStats(){
   const counts = { todos: leads.length }; ORDER.forEach(s => counts[s]=0);
   leads.forEach(l => { counts[l.status] = (counts[l.status]||0)+1; });
@@ -287,9 +297,10 @@ function renderList(){
 }
 function openDetail(id){
   const l = leads.find(x => x.id === id); if(!l) return;
+  const isSuper = role === 'super';
   const opts = ORDER.map(s => '<option value="'+s+'"'+(s===l.status?' selected':'')+'>'+STATUS[s].label+'</option>').join('');
   const contaBtn = l.conta_url ? '<a class="a-conta" href="'+esc(l.conta_url)+'" target="_blank" rel="noopener">📎 Ver conta de luz</a>' : '<a class="a-conta off">Sem conta anexada</a>';
-  const propsArr = Array.isArray(l.propostas) ? l.propostas : [];
+  const propsArr = (isSuper && Array.isArray(l.propostas)) ? l.propostas : [];
   const propHtml = propsArr.length
     ? '<div class="m-props"><div class="pl">Propostas geradas ('+propsArr.length+')</div>'+
         propsArr.slice().reverse().map(function(p){
@@ -298,6 +309,14 @@ function openDetail(id){
         }).join('')+
       '</div>'
     : '';
+  const st = STATUS[l.status] || STATUS.novo;
+  const editHtml = isSuper
+    ? '<div class="m-edit"><label>Status</label><select id="mStatus">'+opts+'</select>'+
+        '<label style="margin-top:14px">Notas internas</label><textarea id="mNotas" placeholder="Anotações sobre o contato, próximos passos...">'+esc(l.notas||'')+'</textarea>'+
+        '<button class="m-prop" id="mProp">📄 Gerar proposta comercial</button>'+
+        '<button class="m-save" id="mSave">Salvar alterações</button>'+
+        '<button class="m-del" id="mDel">Excluir lead</button></div>'
+    : '<div class="m-edit"><label>Status</label><div class="val"><span class="badge" style="color:'+st.color+';background:'+st.bg+'">'+st.label+'</span></div></div>';
   $('modalCard').innerHTML =
     '<div class="m-top"><div><h2 class="serif">'+esc(l.nome)+'</h2></div><button class="m-close" id="mClose">&times;</button></div>'+
     '<div class="m-when">Recebido em '+fmtDate(l.data)+'</div>'+
@@ -313,19 +332,17 @@ function openDetail(id){
       (l.email?'<a class="a-mail" href="mailto:'+esc(l.email)+'">Enviar e-mail</a>':'')+ contaBtn +
     '</div>'+
     propHtml +
-    '<div class="m-edit"><label>Status</label><select id="mStatus">'+opts+'</select>'+
-      '<label style="margin-top:14px">Notas internas</label><textarea id="mNotas" placeholder="Anotações sobre o contato, próximos passos...">'+esc(l.notas||'')+'</textarea>'+
-      '<button class="m-prop" id="mProp">📄 Gerar proposta comercial</button>'+
-      '<button class="m-save" id="mSave">Salvar alterações</button>'+
-      '<button class="m-del" id="mDel">Excluir lead</button></div>';
+    editHtml;
   $('modal').classList.add('show');
   $('mClose').addEventListener('click', closeModal);
-  $('mSave').addEventListener('click', () => saveDetail(id));
-  $('mDel').addEventListener('click', () => deleteDetail(id));
-  $('mProp').addEventListener('click', () => openPropostaModal(id));
-  Array.prototype.forEach.call($('modalCard').querySelectorAll('.preabrir'), function(b){
-    b.addEventListener('click', function(){ window.open('/proposta.html?'+decodeURIComponent(b.getAttribute('data-q')), '_blank'); });
-  });
+  if(isSuper){
+    $('mSave').addEventListener('click', () => saveDetail(id));
+    $('mDel').addEventListener('click', () => deleteDetail(id));
+    $('mProp').addEventListener('click', () => openPropostaModal(id));
+    Array.prototype.forEach.call($('modalCard').querySelectorAll('.preabrir'), function(b){
+      b.addEventListener('click', function(){ window.open('/proposta.html?'+decodeURIComponent(b.getAttribute('data-q')), '_blank'); });
+    });
+  }
 }
 function closeModal(){ $('modal').classList.remove('show'); }
 $('modal').addEventListener('click', (e) => { if(e.target.id === 'modal') closeModal(); });
