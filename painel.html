@@ -122,6 +122,10 @@
     background:linear-gradient(135deg,var(--forest),var(--olive));box-shadow:0 12px 24px -12px rgba(60,74,43,.6);transition:transform .12s}
   .m-save:hover{transform:translateY(-2px)}
   .m-save.saved{background:linear-gradient(135deg,var(--ok),#1f6b43)}
+  .m-del{width:100%;margin-top:9px;font-weight:600;font-size:14px;color:var(--err);border-radius:12px;padding:12px;
+    background:#fff;border:1.5px solid #e7c9c4;transition:background .15s,border-color .15s}
+  .m-del:hover{background:#fbeeec;border-color:var(--err)}
+  .m-del:disabled{opacity:.6;cursor:default}
   .loading-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;color:var(--ink-soft);font-size:15px}
 </style>
 </head>
@@ -273,10 +277,12 @@ function openDetail(id){
     '</div>'+
     '<div class="m-edit"><label>Status</label><select id="mStatus">'+opts+'</select>'+
       '<label style="margin-top:14px">Notas internas</label><textarea id="mNotas" placeholder="Anotações sobre o contato, próximos passos...">'+esc(l.notas||'')+'</textarea>'+
-      '<button class="m-save" id="mSave">Salvar alterações</button></div>';
+      '<button class="m-save" id="mSave">Salvar alterações</button>'+
+      '<button class="m-del" id="mDel">Excluir lead</button></div>';
   $('modal').classList.add('show');
   $('mClose').addEventListener('click', closeModal);
   $('mSave').addEventListener('click', () => saveDetail(id));
+  $('mDel').addEventListener('click', () => deleteDetail(id));
 }
 function closeModal(){ $('modal').classList.remove('show'); }
 $('modal').addEventListener('click', (e) => { if(e.target.id === 'modal') closeModal(); });
@@ -288,6 +294,16 @@ function saveDetail(id){
       btn.textContent = '✓ Salvo!'; btn.classList.add('saved'); render(); setTimeout(closeModal, 650); }
     else { btn.textContent='Salvar alterações'; btn.disabled=false; alert((resp&&resp.error)||'Erro ao salvar.'); }
   }).catch(function(){ btn.textContent='Salvar alterações'; btn.disabled=false; alert('Falha de conexão.'); });
+}
+function deleteDetail(id){
+  const l = leads.find(x => x.id === id);
+  const nome = l ? l.nome : 'este lead';
+  if(!confirm('Excluir '+nome+'? Esta ação é permanente e também remove a conta de luz anexada.')) return;
+  const btn = $('mDel'); btn.textContent = 'Excluindo...'; btn.disabled = true;
+  api({ action:'delete', password: pw, id: id }).then(function(resp){
+    if(resp && resp.ok){ leads = leads.filter(x => x.id !== id); render(); closeModal(); }
+    else { btn.textContent='Excluir lead'; btn.disabled=false; alert((resp&&resp.error)||'Erro ao excluir.'); }
+  }).catch(function(){ btn.textContent='Excluir lead'; btn.disabled=false; alert('Falha de conexão.'); });
 }
 
 </script>

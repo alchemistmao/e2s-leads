@@ -1,0 +1,14 @@
+# Dependências
+node_modules/
+
+# Config local de tooling (preview/agent)
+.claude/
+
+# Dossiê do projeto — contém a senha do painel. NUNCA commitar (repo público).
+CONTEXT.md
+
+# Logs e temporários
+npm-debug.log*
+.DS_Store
+.env
+.env.*
